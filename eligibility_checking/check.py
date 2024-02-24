@@ -54,13 +54,12 @@ class Grades:
         get eligibility from totals data
         """
 
-        # raise an error if the student type (undergraduate/graduate) hasn't been determined
-        if self.student_type == StudentType.UNDETERMINED:
-            raise AttributeError('student type not yet determined')
-
         # grab eligibility dictionary for the given student type
         # stores information about cutoffs
-        eligibility_dictionary = ELIGIBILITY[self.student_type]
+        try:
+            eligibility_dictionary = ELIGIBILITY[self.student_type]
+        except AttributeError as e:
+            raise ValueError("student type not yet initialized") from e
 
         # find the first valid range
         for key, val in eligibility_dictionary.items():
