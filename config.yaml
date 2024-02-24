@@ -1,0 +1,25 @@
+StudentType:
+  UNDETERMINED
+  UNDERGRADUATE
+  GRADUATE
+
+Eligibility:
+  INELIGIBLE
+  PROBATION
+  ELIGIBLE
+
+ELIGIBILITY:
+  UNDERGRADUATE:
+    - range: [0.0, 2.0]
+      eligibility: INELIGIBLE
+    - range: [2.0, 2.5]
+      eligibility: PROBATION
+    - range: [2.5, 4.01]
+      eligibility: ELIGIBLE
+  GRADUATE:
+    - range: [0.0, 2.5]
+      eligibility: INELIGIBLE
+    - range: [2.5, 3.0]
+      eligibility: PROBATION
+    - range: [3.0, 4.01]
+      eligibility: ELIGIBLE

@@ -1,9 +1,24 @@
 from dataclasses import dataclass, field
 import json
+from enum import Enum
 
 from fitz import Document
+import yaml
 
-from .config import StudentType, ELIGIBILITY, Eligibility
+with open('config.yaml', 'r') as file:
+    CONFIG_DATA = yaml.safe_load(file)
+
+# load student types as Enum
+
+StudentType = Enum('StudentType', CONFIG_DATA["StudentType"])
+Eligibility = Enum('Eligibility', CONFIG_DATA["Eligibility"])
+
+ELIGIBILITY = dict()
+for student_type_str, ranges in CONFIG_DATA["ELIGIBILITY"].items():
+    reformatted_ranges = dict()
+    for r in ranges:
+        reformatted_ranges[tuple(r["range"])] = getattr(Eligibility, r["eligibility"])
+    ELIGIBILITY[getattr(StudentType, student_type_str)] = reformatted_ranges
 
 
 @dataclass
@@ -14,7 +29,7 @@ class Grades:
     corresponds to "Transcript Totals" grid at the end of a transcript
     """
 
-    student_type: StudentType = StudentType.UNDETERMINED
+    student_type: StudentType = field(init=False)
     total_institution: list[float] = field(default_factory=list)
     total_transfer: list[float] = field(default_factory=list)
     overall: list[float] = field(default_factory=list)
