@@ -1,2 +1,4 @@
 PyYAML
 PyMuPDF
+discord
+requests

@@ -30,6 +30,7 @@ class Grades:
     """
 
     student_type: StudentType = field(init=False)
+    full_name: str = field(init=False)
     total_institution: list[float] = field(default_factory=list)
     total_transfer: list[float] = field(default_factory=list)
     overall: list[float] = field(default_factory=list)
@@ -71,7 +72,7 @@ class Grades:
         raise ValueError('input not bound between any keys in dictionary')
 
 
-def get_academic_eligibility(doc: Document) -> Eligibility:
+def get_grades(doc: Document) -> Grades:
 
     """
     get eligibility from fitz document
@@ -87,11 +88,33 @@ def get_academic_eligibility(doc: Document) -> Eligibility:
         page for page in json_doc if page['blocks']
     ]
 
-    # grab the last non-empty page
-    last_page = non_empty_pages[-1]
-
     # initialize a Grades instance to store grade info in
     totals = Grades()
+
+    # grab first page with student info
+    first_page = non_empty_pages[0]
+
+    name_line = None
+    for i, block in enumerate(first_page['blocks']):
+        lines = block['lines']
+        if len(lines) != 1:
+            continue
+        line = lines[0]
+        spans = line['spans']
+        if len(spans) != 1:
+            continue
+        txt = spans[0]['text']
+        if txt == 'Name':
+            name_line = i + 1
+            break
+
+    if not name_line:
+        raise ValueError
+
+    totals.full_name = first_page['blocks'][name_line]['lines'][0]['spans'][0]['text']
+
+    # grab the last non-empty page
+    last_page = non_empty_pages[-1]
 
     # loop through blocks in the last page
     for block in last_page['blocks']:
@@ -110,8 +133,10 @@ def get_academic_eligibility(doc: Document) -> Eligibility:
             if txt == 'Transcript Totals -':
                 # grab the student type from the snippet after Transcript Totals
                 # store in Grades instance
-                student_type_str = text_snippets[i+1].strip('()').upper()
-                totals.student_type = getattr(StudentType, student_type_str)
+                totals.student_type = getattr(
+                    StudentType,
+                    text_snippets[i+1].strip('()').upper()
+                )
                 continue
 
             # continue if text isn't total count
@@ -123,4 +148,4 @@ def get_academic_eligibility(doc: Document) -> Eligibility:
             getattr(totals, attr).extend(float(t) for t in text_snippets[i+1:i+7])
             break
 
-    return totals.eligibility
+    return totals
