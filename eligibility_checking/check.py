@@ -75,7 +75,6 @@ class Grades:
         raise ValueError("input not bound between any keys in dictionary")
 
     def validate(self, attr_to_check: str, correct_type: type) -> None:
-
         """
         validate that a particular attr is the correct type, throw an error if not
         """
@@ -91,7 +90,6 @@ class Grades:
             raise ValueError(f"{attr_to_check} is not type {correct_type}")
 
     def validate_all(self) -> None:
-
         """
         validate all attrs in class
         """

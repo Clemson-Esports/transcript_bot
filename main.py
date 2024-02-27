@@ -46,7 +46,6 @@ STATUS_MESSAGES = {
 
 @dataclass
 class DirectMessage:
-
     """
     small class for creating a direct message
     """
