@@ -65,7 +65,7 @@ class DirectMessage:
         )
 
 
-# hidden variables - bot sends eligibility messages to CHANNEL_ID and to user DMs
+# hidden variables - bot sends eligibility messages to CHANNEL_ID and to user DMs, API key defines bot
 CHANNEL_ID = int(os.environ["CHANNEL_ID"])
 BOT_API_KEY = os.environ["BOT_API_KEY"]
 
