@@ -9,7 +9,6 @@ from string import Template
 
 import discord
 from discord.ext import commands
-import requests
 import fitz
 
 from eligibility_checking.check import get_grades, Eligibility
@@ -129,9 +128,8 @@ def main():
             return
 
         # open the attachment as a stream of bytes
-        url = message.attachments[0].url
-        response = requests.get(url)
-        doc = fitz.open(stream=response.content, filetype="pdf")
+        stream = await message.attachments[0].read()
+        doc = fitz.open(stream=stream, filetype="pdf")
 
         # if not a PDF, log that the user tried to send a non-PDF document
         if "PDF" not in doc.metadata["format"]:
