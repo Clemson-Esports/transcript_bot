@@ -1,3 +1,7 @@
+"""
+Module for computing necessary data from a submitted transcript
+"""
+
 from dataclasses import dataclass, field
 import json
 from enum import Enum
@@ -5,10 +9,12 @@ from enum import Enum
 from fitz import Document
 import yaml
 
+# need to parse input config
+# code is called from parent directory
+# so config file needs to be referenced as if we are in parent directory
+
 with open("config.yaml", "r") as file:
     CONFIG_DATA = yaml.safe_load(file)
-
-# load student types as Enum
 
 StudentType = Enum("StudentType", CONFIG_DATA["StudentType"])
 Eligibility = Enum("Eligibility", CONFIG_DATA["Eligibility"])
@@ -70,6 +76,10 @@ class Grades:
 
     def validate(self, attr_to_check: str, correct_type: type) -> None:
 
+        """
+        validate that a particular attr is the correct type, throw an error if not
+        """
+
         try:
             attr = getattr(self, attr_to_check)
             attr_check = isinstance(attr, correct_type)
@@ -81,6 +91,10 @@ class Grades:
             raise ValueError(f"{attr_to_check} is not type {correct_type}")
 
     def validate_all(self) -> None:
+
+        """
+        validate all attrs in class
+        """
 
         self.validate("student_type", StudentType)
         self.validate("full_name", str)
@@ -106,6 +120,7 @@ def get_grades(doc: Document) -> Grades:
     # grab first page with student info
     first_page = non_empty_pages[0]
 
+    # search for name line, i.e. line after line with "text": "Name"
     name_line = None
     for i, block in enumerate(first_page["blocks"]):
         lines = block["lines"]
