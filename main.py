@@ -2,7 +2,6 @@
 Script for launching the bot
 """
 
-from dataclasses import dataclass
 import os
 import logging.handlers
 from string import Template
@@ -42,25 +41,6 @@ STATUS_MESSAGES = {
     Eligibility.PROBATION: f"Probation :warning: \n {DISCLAIMER}",
     Eligibility.INELIGIBLE: f"Ineligible :no_entry_sign: \n {DISCLAIMER}",
 }
-
-
-@dataclass
-class DirectMessage:
-    """
-    small class for creating a direct message
-    """
-
-    full_name: str
-    username: str
-    message: str
-
-    def __str__(self):
-        return (
-            f"Transcript received!\n"
-            f"Name: {self.full_name}\n"
-            f"Username: {self.username}\n"
-            f"Status: {self.message}"
-        )
 
 
 # hidden variables - bot sends eligibility messages to CHANNEL_ID and to user DMs, API key defines bot
