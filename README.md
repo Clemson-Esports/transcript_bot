@@ -39,4 +39,4 @@ Upon an unsuccessful parsing, through, more information will be stored:
 This logs into a [JSON Lines](https://jsonlines.org/) file on our server, but this file is not necessarily private. This is mostly to keep track of malicious agents, such as those spamming and/or sending malicious files to the bot.
 
 -------------
-<span style="font-size:0.8em;"><a name="gpa"><sup>1</sup></a>While your GPA is calculated, it is an intermediate variable, and is immediately discarded once the calculations are finished.</span>
+<a name="gpa"><sup>1</sup></a><span style="font-size:0.8em;">While your GPA is calculated, it is an intermediate variable, and is immediately discarded once the calculations are finished.</span>
