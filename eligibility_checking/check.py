@@ -71,6 +71,26 @@ class Grades:
         # return an error if above loop is never finished
         raise ValueError('input not bound between any keys in dictionary')
 
+    def validate(self, attr_to_check: str, correct_type: type) -> None:
+
+        try:
+            attr = getattr(self, attr_to_check)
+            attr_check = isinstance(attr, correct_type)
+            assert attr_check
+        except AttributeError as e:
+            raise ValueError(f'{attr_to_check} is not correctly stored') from e
+
+        if not attr_check:
+            raise ValueError(f'{attr_to_check} is not type {correct_type}')
+
+    def validate_all(self) -> None:
+
+        self.validate('student_type', StudentType)
+        self.validate('full_name', str)
+
+        for attr in ['total_institution', 'total_transfer', 'overall']:
+            self.validate(attr, list)
+
 
 def get_grades(doc: Document) -> Grades:
 
@@ -109,7 +129,7 @@ def get_grades(doc: Document) -> Grades:
             break
 
     if not name_line:
-        raise ValueError
+        raise ValueError('name not found in document')
 
     totals.full_name = first_page['blocks'][name_line]['lines'][0]['spans'][0]['text']
 
@@ -148,4 +168,5 @@ def get_grades(doc: Document) -> Grades:
             getattr(totals, attr).extend(float(t) for t in text_snippets[i+1:i+7])
             break
 
+    totals.validate_all()
     return totals

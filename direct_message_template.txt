@@ -1,5 +1,5 @@
 Transcript received! Please verify that all the information below is correct.
-Name: $full_name
-Type: $student_type
-Username: $username
-Status: $status
+Name: ${full_name}
+Type: ${student_type}
+Username: ${username}
+Status: ${status}
