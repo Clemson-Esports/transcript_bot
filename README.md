@@ -5,7 +5,7 @@
 ---------------------------
 ### Submission Instructions
 
-1) Log into https://iroar.app.clemson.edu/dashboard/ (with the VPN!!! the bot will likely not work with a transcript dowloaded from cuapps)
+1) Log into https://iroar.app.clemson.edu/dashboard/ (with the VPN!!! the bot will likely not work with a transcript downloaded from cuapps)
 2) Select **Student Self-Service**
 3) Under **Student Records**, select **Academic Transcript**
 4) Select the appropriate level in the **Transcript Level** dropdown menu, and **Web Transcript** in the **Transcript Type** dropdown menu
