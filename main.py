@@ -9,15 +9,14 @@ from string import Template
 import discord
 from discord.ext import commands
 import fitz
+from dotenv import load_dotenv
 
 from eligibility_checking.check import get_grades, Eligibility
 
-from dotenv import load_dotenv
-
 # metadata
-__version__ = "2.0.0"
-__last_updated__ = "02/26/2024"
-__authors__ = ["Jacob Jeffries (haydnsdad)"]
+__version__ = "2.0.1"
+__last_updated__ = "02/29/2024"
+__authors__ = ["Jacob Jeffries (haydnsdad)", "Jay Adusumilli (therealj4y)"]
 
 # create a logger
 LOGGER = logging.getLogger(f"transcript_bot_{__version__}")
@@ -64,35 +63,39 @@ def main():
     async def on_ready():
         LOGGER.info("the bot has been turned online")
 
+    # +version command
+    @bot.command()
+    async def version(ctx):
+        await ctx.reply(
+            f"My version number is {__version__}, last updated {__last_updated__}"
+        )
+
+    # +ping command
+    @bot.command()
+    async def ping(ctx):
+        await ctx.reply(f"pong :ping_pong: ({bot.latency * 1.0e+3:.1f} ms)")
+
+    # +pong command (pings don 😂)
+    @bot.command()
+    async def pong(ctx):
+        await ctx.reply(f"eat shit <@289901600078692352>")
+
+    # +authors command
+    @bot.command()
+    async def authors(ctx):
+        await ctx.reply(f"My authors are {', '.join(__authors__)}")
+
     # perform various types of events when a message is sent
     @bot.event
     async def on_message(message: discord.message.Message):
 
-        # ignore the message if the message is sent by the bot
-        if message.author == bot.user:
-            return
+        # on_message blocks prior commands without this line
+        await bot.process_commands(message)
 
-        # send out the version info when prompted
-        if message.content.startswith("+version"):
-            await message.channel.send(
-                f"My version number is {__version__}, last updated {__last_updated__}"
-            )
-            return
-
-        # respond to a ping
-        if message.content.startswith("+ping"):
-            await message.channel.send(
-                f"pong :ping_pong: ({bot.latency * 1.0e+3:.1f} ms)"
-            )
-            return
-
-        # send out the authors when prompted
-        if message.content.startswith("+authors"):
-            await message.channel.send(f"My authors are {', '.join(__authors__)}")
-            return
-
-        # do not attempt to read attachments unless channel is a DM channel
-        if not isinstance(message.channel, discord.channel.DMChannel):
+        # ignore the message if the message is sent by the bot or if not in a DM
+        is_sent_by_bot = message.author == bot.user
+        is_dm = isinstance(message.channel, discord.channel.DMChannel)
+        if is_sent_by_bot or not is_dm:
             return
 
         # if no attachments added, log the contents
