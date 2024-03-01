@@ -12,6 +12,8 @@ import fitz
 
 from eligibility_checking.check import get_grades, Eligibility
 
+from dotenv import load_dotenv
+
 # metadata
 __version__ = "2.0.0"
 __last_updated__ = "02/26/2024"
@@ -42,10 +44,12 @@ STATUS_MESSAGES = {
     Eligibility.INELIGIBLE: f"Ineligible :no_entry_sign: \n {DISCLAIMER}",
 }
 
+# Get the environment variables from the .env file.
+load_dotenv()
 
 # hidden variables - bot sends eligibility messages to CHANNEL_ID and to user DMs, API key defines bot
-CHANNEL_ID = int(os.environ["CHANNEL_ID"])
-BOT_API_KEY = os.environ["BOT_API_KEY"]
+CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+BOT_API_KEY = str(os.getenv("BOT_API_KEY"))
 
 
 def main():
