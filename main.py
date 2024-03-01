@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from eligibility_checking.check import get_grades, Eligibility
 
 # metadata
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __last_updated__ = "02/29/2024"
 __authors__ = ["Jacob Jeffries (haydnsdad)", "Jay Adusumilli (therealj4y)"]
 
@@ -50,40 +50,65 @@ load_dotenv()
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 BOT_API_KEY = str(os.getenv("BOT_API_KEY"))
 
+# README link for tutorial
+README = "https://github.com/Clemson-Esports/transcript_bot/blob/main/README.md"
+
+# victim getting pinged... poor guy
+PONG_VICTIM = "<@289901600078692352>"
+
 
 def main():
 
     # initialize the bot
     intents = discord.Intents.default()
     intents.message_content = True
-    bot = commands.Bot(command_prefix="+", intents=intents)
+
+    help_command = commands.DefaultHelpCommand(
+        no_category="Commands",
+        sort_commands=False,
+    )
+    bot = commands.Bot(command_prefix="+", intents=intents, help_command=help_command)
 
     # log when the bot has been turned on
     @bot.event
     async def on_ready():
         LOGGER.info("the bot has been turned online")
 
+    # +tutorial command, redirects user to README.md in repo
+    @bot.command(help="sends link to transcript submission tutorial")
+    async def tutorial(ctx):
+        await ctx.reply(
+            f"See the transcript submission tutorial at {README}"
+        )
+
     # +version command
-    @bot.command()
+    @bot.command(help="prints out version")
     async def version(ctx):
         await ctx.reply(
             f"My version number is {__version__}, last updated {__last_updated__}"
         )
 
     # +ping command
-    @bot.command()
+    @bot.command(help="pings the bot to see if it's online")
     async def ping(ctx):
         await ctx.reply(f"pong :ping_pong: ({bot.latency * 1.0e+3:.1f} ms)")
 
     # +pong command (pings don 😂)
-    @bot.command()
+    @bot.command(help="does something devious ")
     async def pong(ctx):
-        await ctx.reply(f"eat shit <@289901600078692352>")
+        await ctx.reply(f"eat shit {PONG_VICTIM}")
 
     # +authors command
-    @bot.command()
+    @bot.command(help="prints out authors")
     async def authors(ctx):
         await ctx.reply(f"My authors are {', '.join(__authors__)}")
+
+    @bot.event
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.errors.CommandNotFound):
+            await ctx.reply(f"Not a valid command :frowning:\nSend '{bot.command_prefix}help' to see valid commands")
+        else:
+            raise error
 
     # perform various types of events when a message is sent
     @bot.event
@@ -91,6 +116,9 @@ def main():
 
         # on_message blocks prior commands without this line
         await bot.process_commands(message)
+
+        if bot.user.mentioned_in(message):
+            await message.reply(f"Send '{bot.command_prefix}help' to see valid commands")
 
         # ignore the message if the message is sent by the bot or if not in a DM
         is_sent_by_bot = message.author == bot.user
