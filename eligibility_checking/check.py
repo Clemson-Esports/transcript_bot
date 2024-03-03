@@ -36,21 +36,7 @@ class Grades:
 
     student_type: StudentType = field(init=False)
     full_name: str = field(init=False)
-    total_institution: list[float] = field(default_factory=list)
-    total_transfer: list[float] = field(default_factory=list)
-    overall: list[float] = field(default_factory=list)
-
-    @property
-    def gpa(self) -> float:
-        """
-        get gpa from overall list
-        """
-
-        # raise error if overall list isn't stored yet
-        if not self.overall:
-            raise AttributeError("gpa not yet stored from document")
-
-        return self.overall[-1]
+    gpa: float = field(init=False)
 
     @property
     def eligibility(self) -> Eligibility:
@@ -96,9 +82,7 @@ class Grades:
 
         self.validate("student_type", StudentType)
         self.validate("full_name", str)
-
-        for attr in ["total_institution", "total_transfer", "overall"]:
-            self.validate(attr, list)
+        self.validate("gpa", float)
 
 
 def get_grades(doc: Document) -> Grades:
@@ -163,9 +147,8 @@ def get_grades(doc: Document) -> Grades:
             if txt not in ["Total Institution", "Total Transfer", "Overall"]:
                 continue
 
-            # store next six numbers in the corresponding array in the Grades instance
-            attr = txt.lower().replace(" ", "_")
-            getattr(totals, attr).extend(float(t) for t in text_snippets[i + 1 : i + 7])
+            # store gpa
+            totals.gpa = float(text_snippets[i + 1:i + 7][-1])
             break
 
     totals.validate_all()
