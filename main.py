@@ -5,17 +5,18 @@ Script for launching the bot
 import os
 import logging.handlers
 from string import Template
+from io import BytesIO
 
 import discord
 from discord.ext import commands
-import fitz
 from dotenv import load_dotenv
+from hotpdf import HotPdf
 
-from eligibility_checking.check import get_grades, Eligibility
+from eligibility_checking.check import Eligibility, get_grades
 
 # metadata
-__version__ = "2.0.2"
-__last_updated__ = "02/29/2024"
+__version__ = "2.1.0"
+__last_updated__ = "03/03/2024"
 __authors__ = ["Jacob Jeffries (haydnsdad)", "Jay Adusumilli (therealj4y)"]
 
 # create a logger
@@ -143,15 +144,17 @@ def main():
 
         # open the attachment as a stream of bytes
         stream = await message.attachments[0].read()
-        doc = fitz.open(stream=stream, filetype="pdf")
+#        doc = fitz.open(stream=stream, filetype="pdf")
 
         # if not a PDF, log that the user tried to send a non-PDF document
-        if "PDF" not in doc.metadata["format"]:
-            await message.channel.send("document is not recognized as a PDF")
-            LOGGER.error(
-                f"{message.author} sent a non-PDF document with name {message.attachments[0].filename}"
-            )
-            return
+#        if "PDF" not in doc.metadata["format"]:
+#            await message.channel.send("document is not recognized as a PDF")
+#            LOGGER.error(
+#                f"{message.author} sent a non-PDF document with name {message.attachments[0].filename}"
+#            )
+#            return
+
+        doc = HotPdf(BytesIO(stream))
 
         # try to calculate grades, send user traceback if something not currently checked breaks
         try:

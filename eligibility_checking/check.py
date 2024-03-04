@@ -3,11 +3,12 @@ Module for computing necessary data from a submitted transcript
 """
 
 from dataclasses import dataclass, field
-import json
 from enum import Enum
+import re
 
-from fitz import Document
 import yaml
+from hotpdf import HotPdf
+from hotpdf.utils import get_element_dimension
 
 # need to parse input config
 # code is called from parent directory
@@ -85,71 +86,49 @@ class Grades:
         self.validate("gpa", float)
 
 
-def get_grades(doc: Document) -> Grades:
-    """
-    get eligibility from fitz document
-    """
+def contains_text(document: HotPdf, text: str) -> bool:
 
-    # load pages as json format
-    json_doc = [json.loads(page.get_text("json")) for page in doc]
+    found_text = document.find_text(text)
+    for hot_character in found_text.values():
+        if len(hot_character) != 0:
+            return True
 
-    # grab the non-empty pages in the document
-    non_empty_pages = [page for page in json_doc if page["blocks"]]
+    return False
 
-    # initialize a Grades instance to store grade info in
-    totals = Grades()
 
-    # grab first page with student info
-    first_page = non_empty_pages[0]
+def get_grades(doc: HotPdf, page_width: int = 1_000_000) -> Grades:
 
-    # search for name line, i.e. line after line with "text": "Name"
-    name_line = None
-    for i, block in enumerate(first_page["blocks"]):
-        lines = block["lines"]
-        if len(lines) != 1:
-            continue
-        line = lines[0]
-        spans = line["spans"]
-        if len(spans) != 1:
-            continue
-        txt = spans[0]["text"]
-        if txt == "Name":
-            name_line = i + 1
+    grades = Grades()
+
+    num_pages = len(doc.pages)
+
+    occurrences = doc.find_text("Overall", take_span=True)
+    gpa = None
+    for page in range(num_pages):
+        try:
+            dims = occurrences[page][-1]
+            element_dim = get_element_dimension(dims)
+            span = doc.extract_text(x0=element_dim.x0, y0=element_dim.y0, x1=page_width, y1=element_dim.y1, page=page)
+            gpa = span.strip()[-4:]
             break
+        except IndexError:
+            pass
+    if gpa is None:
+        raise ValueError("GPA occurrence not found")
+    grades.gpa = float(gpa)
 
-    if not name_line:
-        raise ValueError("name not found in document")
+    if contains_text(doc, "Undergraduate"):
+        occurrences = doc.find_text("Undergraduate", take_span=True)
+        grades.student_type = StudentType.UNDERGRADUATE
+    elif contains_text(doc, "Graduate"):
+        occurrences = doc.find_text("Graduate", take_span=True)
+        grades.student_type = StudentType.GRADUATE
+    else:
+        raise ValueError("student type text instance not found")
 
-    totals.full_name = first_page["blocks"][name_line]["lines"][0]["spans"][0]["text"]
+    element_dim = get_element_dimension(occurrences[0][1])
+    span = doc.extract_text(x0=0, y0=element_dim.y0, x1=page_width, y1=element_dim.y1, page=0)
+    matches = re.match(r"(.+)(\d{2}/\d{2}/\d{4})(.+)", span)
+    grades.full_name = matches.group(1)
 
-    # grab the last non-empty page
-    last_page = non_empty_pages[-1]
-
-    # loop through blocks in the last page
-    for block in last_page["blocks"]:
-
-        # grab text snippets from blocks with single lines
-        lines = block["lines"]
-        single_text_lines = [line for line in lines if len(line["spans"]) == 1]
-        text_snippets = [line["spans"][0]["text"] for line in single_text_lines]
-
-        # loop through text snippets
-        for i, txt in enumerate(text_snippets):
-            if txt == "Transcript Totals -":
-                # grab the student type from the snippet after Transcript Totals
-                # store in Grades instance
-                totals.student_type = getattr(
-                    StudentType, text_snippets[i + 1].strip("()").upper()
-                )
-                continue
-
-            # continue if text isn't total count
-            if txt not in ["Total Institution", "Total Transfer", "Overall"]:
-                continue
-
-            # store gpa
-            totals.gpa = float(text_snippets[i + 1:i + 7][-1])
-            break
-
-    totals.validate_all()
-    return totals
+    return grades
