@@ -60,25 +60,21 @@ class Grades:
 
 def get_grades(doc: HotPdf) -> Grades:
 
-    text = ''.join(
-        doc.extract_page_text(page=p) for p in range(len(doc.pages))
-    )
+    text = "".join(doc.extract_page_text(page=p) for p in range(len(doc.pages)))
 
-    fullname_birthday_status, = re.finditer(
-        r"(.+)\d{2}/\d{2}/\d{4}Continuing (Graduate|Undergraduate)",
-        text
+    (fullname_birthday_status,) = re.finditer(
+        r"(.+)\d{2}/\d{2}/\d{4}Continuing (Graduate|Undergraduate)", text
     )
     full_name = fullname_birthday_status.group(1)
     status = fullname_birthday_status.group(2)
 
-    overall, = re.finditer(
-        r"Overall\d{1,3}.000\d{1,3}.000\d{1,3}.000\d{1,3}.00\d{1,3}.00(\d.\d\d)",
-        text
+    (overall,) = re.finditer(
+        r"Overall\d{1,3}.000\d{1,3}.000\d{1,3}.000\d{1,3}.00\d{1,3}.00(\d.\d\d)", text
     )
     gpa = overall.group(1)
-    
+
     return Grades(
         student_type=getattr(StudentType, status.upper()),
         full_name=full_name,
-        gpa=float(gpa)
+        gpa=float(gpa),
     )

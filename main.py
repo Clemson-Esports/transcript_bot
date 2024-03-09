@@ -79,9 +79,7 @@ def main():
     # +tutorial command, redirects user to README.md in repo
     @bot.command(help="sends link to transcript submission tutorial")
     async def tutorial(ctx):
-        await ctx.reply(
-            f"See the transcript submission tutorial at {README}"
-        )
+        await ctx.reply(f"See the transcript submission tutorial at {README}")
 
     # +version command
     @bot.command(help="prints out version")
@@ -108,7 +106,9 @@ def main():
     @bot.event
     async def on_command_error(ctx, error):
         if isinstance(error, commands.errors.CommandNotFound):
-            await ctx.reply(f"Not a valid command :frowning:\nSend '{bot.command_prefix}help' to see valid commands")
+            await ctx.reply(
+                f"Not a valid command :frowning:\nSend '{bot.command_prefix}help' to see valid commands"
+            )
         else:
             raise error
 
@@ -120,7 +120,9 @@ def main():
         await bot.process_commands(message)
 
         if bot.user.mentioned_in(message):
-            await message.reply(f"Send '{bot.command_prefix}help' to see valid commands")
+            await message.reply(
+                f"Send '{bot.command_prefix}help' to see valid commands"
+            )
 
         # ignore the message if the message is sent by the bot or if not in a DM
         is_sent_by_bot = message.author == bot.user
@@ -152,7 +154,9 @@ def main():
             await message.channel.send(
                 "document not detected as PDF! if you believe this is an error, please create a ModMail ticket"
             )
-            LOGGER.error(f"{message.author} sent a non-PDF attachment named {message.attachments[0].filename}")
+            LOGGER.error(
+                f"{message.author} sent a non-PDF attachment named {message.attachments[0].filename}"
+            )
             return
 
         # try to calculate grades, send user traceback if something not currently checked breaks
