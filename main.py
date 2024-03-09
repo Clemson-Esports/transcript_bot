@@ -11,12 +11,13 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from hotpdf import HotPdf
+from pdfminer.pdfparser import PDFSyntaxError
 
 from eligibility_checking.check import Eligibility, get_grades
 
 # metadata
-__version__ = "2.1.0"
-__last_updated__ = "03/03/2024"
+__version__ = "2.2.0"
+__last_updated__ = "03/07/2024"
 __authors__ = ["Jacob Jeffries (haydnsdad)", "Jay Adusumilli (therealj4y)"]
 
 # create a logger
@@ -45,7 +46,7 @@ STATUS_MESSAGES = {
 }
 
 # Get the environment variables from the .env file.
-load_dotenv()
+load_dotenv("bot.env")
 
 # hidden variables - bot sends eligibility messages to CHANNEL_ID and to user DMs, API key defines bot
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
@@ -144,17 +145,15 @@ def main():
 
         # open the attachment as a stream of bytes
         stream = await message.attachments[0].read()
-#        doc = fitz.open(stream=stream, filetype="pdf")
 
-        # if not a PDF, log that the user tried to send a non-PDF document
-#        if "PDF" not in doc.metadata["format"]:
-#            await message.channel.send("document is not recognized as a PDF")
-#            LOGGER.error(
-#                f"{message.author} sent a non-PDF document with name {message.attachments[0].filename}"
-#            )
-#            return
-
-        doc = HotPdf(BytesIO(stream))
+        try:
+            doc = HotPdf(BytesIO(stream))
+        except PDFSyntaxError:
+            await message.channel.send(
+                "document not detected as PDF! if you believe this is an error, please create a ModMail ticket"
+            )
+            LOGGER.error(f"{message.author} sent a non-PDF attachment named {message.attachments[0].filename}")
+            return
 
         # try to calculate grades, send user traceback if something not currently checked breaks
         try:
